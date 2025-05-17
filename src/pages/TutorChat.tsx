@@ -4,6 +4,15 @@ import { getTutorProfile } from '../services/profileService';
 import { generateTutorResponse } from '../services/llmService';
 import ChatUI from '../components/ChatUI';
 
+interface Profile {
+  name: string;
+  style: string;
+  characteristics: string[];
+  tone: string;
+  useAnalogies: boolean;
+  stepByStep: boolean;
+}
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -13,13 +22,25 @@ const TutorChat: React.FC = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [profile, setProfile] = useState(getTutorProfile());
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     if (!profile) {
       navigate('/create');
     }
   }, [profile, navigate]);
+
+  useEffect(() => {
+    // Initialize profile
+    setProfile({
+      name: 'AI Tutor',
+      style: 'Interactive and engaging',
+      characteristics: ['Patient', 'Knowledgeable', 'Clear communicator'],
+      tone: 'Friendly and professional',
+      useAnalogies: true,
+      stepByStep: true
+    });
+  }, []);
 
   const handleSendMessage = async (content: string) => {
     if (!profile) return;

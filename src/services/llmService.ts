@@ -1,92 +1,89 @@
 import axios from 'axios';
 
-interface TutorProfile {
-  tone: string;
+interface AnalysisResponse {
+  analysis: string;
+}
+
+interface TutorResponse {
+  response: string;
+}
+
+interface TeacherProfile {
+  name: string;
   style: string;
+  tone: string;
+  strengths: string[];
+  specializations: string[];
   useAnalogies: boolean;
   stepByStep: boolean;
 }
 
-interface LLMResponse {
-  choices: { message: { content: string } }[];
-}
+const API_URL = 'http://localhost:5000/api';
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const API_KEY = process.env.REACT_APP_GROQ_API_KEY;
-
-export const analyzeLearningStyle = async (content: string): Promise<TutorProfile> => {
+export const analyzeLearningStyle = async (transcript: string): Promise<string> => {
   try {
-    const response = await axios.post<LLMResponse>(
-      GROQ_API_URL,
-      {
-        model: 'mixtral-8x7b-32768',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an AI that analyzes learning content and generates a teaching style profile. Respond with a JSON object containing the following fields: tone (string), style (string), useAnalogies (boolean), stepByStep (boolean).'
-          },
-          {
-            role: 'user',
-            content: `Analyze this learning content and generate a teaching style profile: ${content}`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    if (!transcript) {
+      throw new Error('Transcript is required for analysis');
+    }
 
-    const profile = JSON.parse(response.data.choices[0].message.content);
-    return profile;
-  } catch (error) {
+    const response = await axios.post<AnalysisResponse>(`${API_URL}/analyze`, { transcript });
+    return response.data.analysis;
+  } catch (error: any) {
     console.error('Error analyzing learning style:', error);
-    throw error;
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    if (error.code === 'ERR_NETWORK') {
+      throw new Error('Unable to connect to the server. Please check if the server is running.');
+    }
+    throw new Error('Failed to analyze learning style. Please try again.');
   }
 };
 
-export const generateTutorResponse = async (
-  topic: string,
-  profile: TutorProfile
-): Promise<string> => {
+export const generateTutorResponse = async (message: string, profile: any): Promise<string> => {
   try {
-    const response = await axios.post<LLMResponse>(
-      GROQ_API_URL,
-      {
-        model: 'mixtral-8x7b-32768',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an AI tutor with the following teaching style:
-              - Tone: ${profile.tone}
-              - Style: ${profile.style}
-              - Use Analogies: ${profile.useAnalogies}
-              - Step-by-Step: ${profile.stepByStep}
-              Teach the topic in this style.`
-          },
-          {
-            role: 'user',
-            content: `Please explain: ${topic}`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    if (!message) {
+      throw new Error('Message is required');
+    }
 
-    return response.data.choices[0].message.content;
-  } catch (error) {
+    if (!profile) {
+      throw new Error('Tutor profile is required');
+    }
+
+    const response = await axios.post<TutorResponse>(`${API_URL}/chat`, {
+      message,
+      profile
+    });
+
+    return response.data.response;
+  } catch (error: any) {
     console.error('Error generating tutor response:', error);
-    throw error;
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    if (error.code === 'ERR_NETWORK') {
+      throw new Error('Unable to connect to the server. Please check if the server is running.');
+    }
+    throw new Error('Failed to generate tutor response. Please try again.');
+  }
+};
+
+export const createPersonalizedTeacher = async (analysis: string): Promise<TeacherProfile> => {
+  try {
+    if (!analysis) {
+      throw new Error('Analysis is required');
+    }
+
+    const response = await axios.post<{ teacherProfile: TeacherProfile }>(`${API_URL}/create-teacher`, { analysis });
+    return response.data.teacherProfile;
+  } catch (error: any) {
+    console.error('Error creating personalized teacher:', error);
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    if (error.code === 'ERR_NETWORK') {
+      throw new Error('Unable to connect to the server. Please check if the server is running.');
+    }
+    throw new Error('Failed to create personalized teacher. Please try again.');
   }
 };
