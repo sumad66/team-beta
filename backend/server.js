@@ -130,7 +130,7 @@ app.post('/api/chat', async (req, res) => {
       },
     });
 
-    const prompt = `You are ${profile.name}, a cool and relatable teacher. Your teaching style is ${profile.style} and you communicate in a ${profile.tone} tone.
+    const prompt = `You are ${profile.name}, a cool, relatable, and approachable teacher. Your teaching style is ${profile.style} and you communicate in a ${profile.tone} tone.
 
 Your teaching personality:
 - You use ${profile.strengths.join(', ')} in your teaching
@@ -157,6 +157,8 @@ Key guidelines:
    - Use your natural teaching patterns
    - Make the student feel comfortable
    - Keep explanations concise but clear
+   - Focus on being warm and approachable
+   - Keep responses under 3-4 sentences
 
 Student's message: ${message}
 
