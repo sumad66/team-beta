@@ -1,25 +1,67 @@
+import axios from 'axios';
+
 interface TutorProfile {
-  tone: string;
+  name: string;
   style: string;
+  tone: string;
+  characteristics: string[];
   useAnalogies: boolean;
   stepByStep: boolean;
 }
 
-const STORAGE_KEY = 'tutorProfile';
+interface ProfileResponse {
+  profile: TutorProfile | null;
+}
 
-export const saveTutorProfile = (profile: TutorProfile): void => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+const API_URL = 'http://localhost:5000/api';
+
+// Generate a unique user ID or get it from your auth system
+const getUserId = (): string => {
+  let userId = localStorage.getItem('userId');
+  if (!userId) {
+    userId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('userId', userId);
+  }
+  return userId;
 };
 
-export const getTutorProfile = (): TutorProfile | null => {
-  const profile = localStorage.getItem(STORAGE_KEY);
-  return profile ? JSON.parse(profile) : null;
+export const saveTutorProfile = async (profile: TutorProfile): Promise<void> => {
+  try {
+    const userId = getUserId();
+    await axios.post(`${API_URL}/profile`, { userId, profile });
+  } catch (error) {
+    console.error('Error saving tutor profile:', error);
+    throw new Error('Failed to save tutor profile');
+  }
 };
 
-export const hasTutorProfile = (): boolean => {
-  return localStorage.getItem(STORAGE_KEY) !== null;
+export const getTutorProfile = async (): Promise<TutorProfile | null> => {
+  try {
+    const userId = getUserId();
+    const response = await axios.get<ProfileResponse>(`${API_URL}/profile/${userId}`);
+    return response.data.profile;
+  } catch (error) {
+    console.error('Error getting tutor profile:', error);
+    return null;
+  }
 };
 
-export const clearTutorProfile = (): void => {
-  localStorage.removeItem(STORAGE_KEY);
+export const hasTutorProfile = async (): Promise<boolean> => {
+  try {
+    const profile = await getTutorProfile();
+    return profile !== null;
+  } catch (error) {
+    return false;
+  }
+};
+
+export const clearTutorProfile = async (): Promise<void> => {
+  try {
+    const userId = getUserId();
+    await axios.delete(`${API_URL}/profile/${userId}`);
+    localStorage.removeItem('userId');
+  } catch (error) {
+    console.error('Error clearing tutor profile:', error);
+    throw new Error('Failed to clear tutor profile');
+  }
 }; 
