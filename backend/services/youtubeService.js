@@ -31,8 +31,13 @@ const extractVideoId = (url) => {
 };
 
 const formatTimestamp = (seconds) => {
-  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
   const remainingSeconds = Math.floor(seconds % 60);
+  
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 };
 
@@ -61,14 +66,10 @@ const getTranscript = async (url) => {
         throw new Error('No captions found for this video');
       }
 
-      return englishTranscript.map(item => 
-        `[${formatTimestamp(item.offset / 1000)}] ${item.text}`
-      ).join('\n');
+      return englishTranscript.map(item => item.text).join('\n');
     }
 
-    return transcriptItems.map(item => 
-      `[${formatTimestamp(item.offset / 1000)}] ${item.text}`
-    ).join('\n');
+    return transcriptItems.map(item => item.text).join('\n');
   } catch (error) {
     console.error('Transcript fetch error:', error);
     throw error;
