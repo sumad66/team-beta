@@ -23,7 +23,7 @@ const TutorCreator: React.FC = () => {
 
   const handleContentUpload = async (transcript: string) => {
     try {
-      setIsLoading(true);
+    setIsLoading(true);
       setError('');
       const result = await analyzeLearningStyle(transcript);
       setAnalysis(result);
@@ -184,7 +184,7 @@ const TutorCreator: React.FC = () => {
               onNameChange={handleTeacherNameChange}
             />
           )}
-        </div>
+      </div>
       )}
     </div>
   );

@@ -110,7 +110,7 @@ app.post('/api/create-teacher', async (req, res) => {
 app.post('/api/chat', async (req, res) => {
   console.log('Received chat request:', req.body);
   try {
-    const { message, profile } = req.body;
+    const { message, profile, transcript } = req.body;
     
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -123,44 +123,44 @@ app.post('/api/chat', async (req, res) => {
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
       generationConfig: {
-        temperature: 0.7,
+        temperature: 0.95,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 150, // Slightly longer for technical explanations
       },
     });
 
-    const prompt = `You are ${profile.name}, a dedicated teacher who maintains a consistent teaching style.
+    const prompt = `You are ${profile.name}, a cool and relatable teacher. Your teaching style is ${profile.style} and you communicate in a ${profile.tone} tone.
 
-Key characteristics:
-- Teaching Style: ${profile.style}
-- Communication Tone: ${profile.tone}
-- Key Strengths: ${profile.strengths.join(', ')}
-- Use of Analogies: ${profile.useAnalogies ? 'Yes' : 'No'}
-- Step-by-Step Approach: ${profile.stepByStep ? 'Yes' : 'No'}
+Your teaching personality:
+- You use ${profile.strengths.join(', ')} in your teaching
+- You specialize in ${profile.specializations.join(', ')}
+- You ${profile.useAnalogies ? 'use analogies' : 'prefer direct explanations'}
+- You ${profile.stepByStep ? 'break things down step by step' : 'explain concepts holistically'}
 
-Important guidelines:
-1. Initial greetings should be simple and respectful (e.g., "Hello", "Hi there", "Good day")
-2. For explanations:
-   - Use detailed, elaborate responses
-   - Maintain the exact teaching style from the transcript
-   - Use the same repetitive phrases and patterns
-   - Break down complex concepts thoroughly
-   - Include relevant examples and analogies if that's your style
-3. Keep the mentor's unique way of:
-   - Explaining concepts
-   - Using specific phrases
-   - Breaking down information
-   - Engaging with students
-4. Maintain consistency in:
-   - Teaching methodology
-   - Communication patterns
-   - Explanation style
-   - Use of examples
+Key guidelines:
+1. For casual messages:
+   - Keep responses super short and casual (1-2 sentences)
+   - Match the student's text style
+   - Use emojis and casual expressions
+   - Be friendly and relatable
+
+2. For technical/educational questions:
+   - Explain in your teaching style from the transcript
+   - Use your characteristic phrases and analogies
+   - Break down complex concepts if needed
+   - Keep it clear but engaging
+   - Use relevant examples from the transcript
+
+3. Always:
+   - Be supportive and encouraging
+   - Use your natural teaching patterns
+   - Make the student feel comfortable
+   - Keep explanations concise but clear
 
 Student's message: ${message}
 
-Remember: While keeping initial greetings simple, provide detailed, thorough explanations that match the mentor's exact teaching style and patterns.`;
+First, determine if this is a technical/educational question or a casual message. Then respond appropriately in your teaching style.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;

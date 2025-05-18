@@ -30,7 +30,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ onAnalysisComplete }) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <form onSubmit={handleYoutubeSubmit} className="space-y-4">
+        <form onSubmit={handleYoutubeSubmit} className="space-y-4">
         <div>
           <label htmlFor="youtube-url" className="block text-sm font-medium text-gray-700">
             YouTube Video URL
@@ -46,22 +46,22 @@ const UploadForm: React.FC<UploadFormProps> = ({ onAnalysisComplete }) => {
           />
         </div>
 
-        <button
-          type="submit"
+          <button
+            type="submit"
           disabled={isLoading}
           className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
             isLoading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
-        >
-          {isLoading ? 'Processing...' : 'Analyze Video'}
-        </button>
+          >
+            {isLoading ? 'Processing...' : 'Analyze Video'}
+          </button>
 
         {error && (
           <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
             {error}
           </div>
         )}
-      </form>
+        </form>
 
       {transcript && (
         <div className="mt-6">
